@@ -25,6 +25,7 @@ public class Gemcutter extends LoopingScript {
     private boolean someBool = true;
     private Random random = new Random();
     public boolean DebugScript = false;
+    public int bankcheck = 0;
 
     enum BotState {
         IDLE,
@@ -52,22 +53,30 @@ public class Gemcutter extends LoopingScript {
                 Execution.delay(random.nextLong(1000, 3000));
             }
             case RUNNING -> {
-                println("RUNNING | Pressing buttons and doing stuff");
+                println("RUNNING");
                 Execution.delay(handleSkilling());
             }
             case BANKING -> {
-                println("BANKING | Doing bank stuff");
-                Execution.delayUntil(30000, () -> Bank.loadLastPreset());
-                ExecDelay();
-                if (Backpack.containsItemByCategory(5289)) {
-                    botState = BotState.RUNNING;
-                }
-                ExecDelay();
+                println("BANKING");
+                Execution.delay(handleBanking());
             }
             case PROCESSING -> {
                 Execution.delay(handleProcessing());
             }
         }
+    }
+
+    private long handleBanking() {
+        Execution.delayUntil(30000, () -> Bank.loadLastPreset());
+        int[] catids = { 5290, 5289 };
+        ExecDelay();
+        if (Backpack.containsItemByCategory(5289)) {
+            botState = BotState.RUNNING;
+        } else {
+            println("BANKING | No gems found, changing state to idle.");
+            botState = BotState.IDLE;
+        }
+        return random.nextLong(500, 1353);
     }
 
     private long handleProcessing() {
@@ -83,13 +92,8 @@ public class Gemcutter extends LoopingScript {
     }
 
     private long handleSkilling() {
-        if (Backpack.isEmpty()) {
-            println("handleSkilling | No Gems found! Going idle.");
-            botState = BotState.IDLE;
-            return random.nextLong(250, 500);
-        }
-        if (!Backpack.containsItemByCategory(5289)) {
-            println("handleSkilling | No uncut gems found, banking.");
+        if (Backpack.isEmpty() || !Backpack.containsItemByCategory(5289)) {
+            println("handleSkilling | No Gems found! Banking.");
             botState = BotState.BANKING;
             return random.nextLong(250, 500);
         }
