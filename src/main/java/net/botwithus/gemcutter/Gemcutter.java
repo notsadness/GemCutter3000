@@ -68,9 +68,8 @@ public class Gemcutter extends LoopingScript {
 
     private long handleBanking() {
         Execution.delayUntil(30000, () -> Bank.loadLastPreset());
-        int[] catids = { 5290, 5289 };
         ExecDelay();
-        if (Backpack.containsItemByCategory(5289)) {
+        if (!Backpack.isEmpty()) {
             botState = BotState.RUNNING;
         } else {
             println("BANKING | No gems found, changing state to idle.");
@@ -105,7 +104,6 @@ public class Gemcutter extends LoopingScript {
             botState = BotState.IDLE;
             return random.nextLong(1230, 2132);
         } else {
-            ExecDelay();
             boolean craftsuccess = craftlog1.interact("Craft");
             ExecDelay();
             if (craftsuccess) {
