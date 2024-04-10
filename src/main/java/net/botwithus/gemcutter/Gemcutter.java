@@ -16,7 +16,8 @@ import net.botwithus.rs3.game.minimenu.actions.ComponentAction;
 import net.botwithus.rs3.game.queries.builders.components.ComponentQuery;
 import net.botwithus.rs3.util.RandomGenerator;
 import net.botwithus.rs3.game.skills.Skills;
-
+import net.botwithus.rs3.game.vars.VarManager;
+import net.botwithus.rs3.game.js5.types.vars.VarDomainType;
 import java.util.Random;
 
 public class Gemcutter extends LoopingScript {
@@ -30,8 +31,7 @@ public class Gemcutter extends LoopingScript {
     enum BotState {
         IDLE,
         RUNNING,
-        BANKING,
-        PROCESSING
+        BANKING
     }
 
     public Gemcutter(String s, ScriptConfig scriptConfig, ScriptDefinition scriptDefinition) {
@@ -60,9 +60,6 @@ public class Gemcutter extends LoopingScript {
                 println("BANKING");
                 Execution.delay(handleBanking());
             }
-            case PROCESSING -> {
-                Execution.delay(handleProcessing());
-            }
         }
     }
 
@@ -78,21 +75,9 @@ public class Gemcutter extends LoopingScript {
         return random.nextLong(500, 1353);
     }
 
-    private long handleProcessing() {
-        boolean processing = WaitForProcessing(1251); // Interface ID of the 'item production' interface
-        if (!processing) {
-            if (DebugScript) {
-                println("HandleProcessing |  Waiting for interface to close");
-            }
-        } else {
-            botState = BotState.BANKING;
-        }
-        return random.nextLong(450, 550);
-    }
-
     private long handleSkilling() {
         if (Backpack.isEmpty() || !Backpack.containsItemByCategory(5289)) {
-            println("handleSkilling | No Gems found! Banking.");
+            println("handleSkilling | No Gems found, banking.");
             botState = BotState.BANKING;
             return random.nextLong(250, 500);
         }
@@ -112,7 +97,7 @@ public class Gemcutter extends LoopingScript {
                 if (execute) {
                     ExecDelay();
                     println("CraftGems | Cutting gems");
-                    botState = BotState.PROCESSING;
+                    WaitForProcessingV2();
                     return random.nextLong(400, 890);
                 }
             }
@@ -142,18 +127,13 @@ public class Gemcutter extends LoopingScript {
     }
 
     // helpers
-    public boolean WaitForProcessing(int InterfaceId) {
-        boolean completed = false;
-        if (!completed) {
-            boolean checkinterface = CheckInterface(InterfaceId);
-            Execution.delay(500);
-            if (!checkinterface) {
-                completed = true;
-                println("ActionCompleted | Interface has closed: " + InterfaceId);
-                return true;
-            }
-        }
-        return false;
+    public boolean WaitForProcessingV2() {
+        Execution.delayUntil(300000, () -> VarManager.getVarValue(VarDomainType.PLAYER, 1176) > 0);
+        println("WaitForProcessing | Processing gems");
+        Execution.delayUntil(300000, () -> VarManager.getVarValue(VarDomainType.PLAYER, 1176) == 0
+                || !Backpack.containsItemByCategory(5289));
+        println("WaitForProcessing | Processing completed.");
+        return true;
     }
 
     public void ExecDelay() {
