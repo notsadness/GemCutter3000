@@ -98,7 +98,7 @@ public class Gemcutter extends LoopingScript {
                 println("CraftGems | Cutting gems");
                 ExecDelay();
                 WaitForProcessingV2();
-                return random.nextLong(400, 890);
+                return random.nextLong(1200, 2130);
             }
         }
         println("CraftGems | Something went wrong");
