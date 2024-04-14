@@ -41,7 +41,7 @@ public class Gemcutter extends LoopingScript {
 
     @Override
     public void onLoop() {
-        this.loopDelay = 500;
+        this.loopDelay = 550;
         LocalPlayer player = Client.getLocalPlayer();
         if (player == null || Client.getGameState() != Client.GameState.LOGGED_IN || botState == BotState.IDLE) {
             Execution.delay(random.nextLong(1750, 3000));
@@ -76,13 +76,14 @@ public class Gemcutter extends LoopingScript {
     }
 
     private long handleSkilling() {
-        if (Backpack.isEmpty() || !Backpack.containsItemByCategory(5289)) {
+        if (!Backpack.containsItemByCategory(5289)) {
             println("handleSkilling | No Gems found, banking.");
             botState = BotState.BANKING;
-            return random.nextLong(250, 500);
+            return random.nextLong(550, 1200);
         }
         ExecDelay();
         Component craftlog1 = ComponentQuery.newQuery(1473).itemCategory(5289).results().first();
+        ExecDelay();
         int gemid = craftlog1.getItemId();
         if (!CanCut(gemid)) {
             println("handleSkilling | You don't have the required level to cut this gem.");
@@ -93,11 +94,17 @@ public class Gemcutter extends LoopingScript {
             ExecDelay();
             if (craftsuccess) {
                 ExecDelay();
-                Execution.delayUntil(90000,
-                        () -> MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350));
                 println("CraftGems | Cutting gems");
+                MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350);
                 ExecDelay();
-                WaitForProcessingV2();
+                Execution.delayUntil(30000, () -> !Interfaces.isOpen(1370));
+                ExecDelay();
+                while (Interfaces.isOpen(1251)) {
+                    Execution.delay(1000);
+                    if (DebugScript) {
+                        println("CraftGems | Waiting for the gems to cut.");
+                    }
+                }
                 return random.nextLong(1200, 2130);
             }
         }
@@ -123,17 +130,6 @@ public class Gemcutter extends LoopingScript {
             }
             return false;
         }
-    }
-
-    // helpers
-    public boolean WaitForProcessingV2() {
-        Execution.delayUntil(300000, () -> VarManager.getVarValue(VarDomainType.PLAYER, 1176) > 0);
-        println("WaitForProcessing | Processing gems");
-        ExecDelay();
-        Execution.delayUntil(300000, () -> VarManager.getVarValue(VarDomainType.PLAYER, 1176) == 0
-                || !Backpack.containsItemByCategory(5289));
-        println("WaitForProcessing | Processing completed.");
-        return true;
     }
 
     public void ExecDelay() {
