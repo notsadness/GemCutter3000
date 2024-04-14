@@ -41,7 +41,7 @@ public class Gemcutter extends LoopingScript {
 
     @Override
     public void onLoop() {
-        // this.loopDelay = 500;
+        this.loopDelay = 500;
         LocalPlayer player = Client.getLocalPlayer();
         if (player == null || Client.getGameState() != Client.GameState.LOGGED_IN || botState == BotState.IDLE) {
             Execution.delay(random.nextLong(1750, 3000));
@@ -92,14 +92,13 @@ public class Gemcutter extends LoopingScript {
             boolean craftsuccess = craftlog1.interact("Craft");
             ExecDelay();
             if (craftsuccess) {
-                boolean execute = MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350);
                 ExecDelay();
-                if (execute) {
-                    ExecDelay();
-                    println("CraftGems | Cutting gems");
-                    WaitForProcessingV2();
-                    return random.nextLong(400, 890);
-                }
+                Execution.delayUntil(90000,
+                        () -> MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350));
+                println("CraftGems | Cutting gems");
+                ExecDelay();
+                WaitForProcessingV2();
+                return random.nextLong(400, 890);
             }
         }
         println("CraftGems | Something went wrong");
@@ -130,6 +129,7 @@ public class Gemcutter extends LoopingScript {
     public boolean WaitForProcessingV2() {
         Execution.delayUntil(300000, () -> VarManager.getVarValue(VarDomainType.PLAYER, 1176) > 0);
         println("WaitForProcessing | Processing gems");
+        ExecDelay();
         Execution.delayUntil(300000, () -> VarManager.getVarValue(VarDomainType.PLAYER, 1176) == 0
                 || !Backpack.containsItemByCategory(5289));
         println("WaitForProcessing | Processing completed.");
