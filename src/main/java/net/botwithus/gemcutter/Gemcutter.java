@@ -72,7 +72,7 @@ public class Gemcutter extends LoopingScript {
             println("BANKING | No gems found, changing state to idle.");
             botState = BotState.IDLE;
         }
-        return random.nextLong(500, 1353);
+        return random.nextLong(550, 1200);
     }
 
     private long handleSkilling() {
@@ -81,35 +81,37 @@ public class Gemcutter extends LoopingScript {
             botState = BotState.BANKING;
             return random.nextLong(550, 1200);
         }
+        if (Backpack.containsItemByCategory(5289) && Backpack.containsItemByCategory(5290)) {
+            println("handleSkilling | Mixed inventory found, banking.");
+            botState = BotState.BANKING;
+            return random.nextLong(550, 1200);
+        }
         ExecDelay();
-        Component craftlog1 = ComponentQuery.newQuery(1473).itemCategory(5289).results().first();
+        Component gem = ComponentQuery.newQuery(1473).itemCategory(5289).results().first();
         ExecDelay();
-        int gemid = craftlog1.getItemId();
-        if (!CanCut(gemid)) {
-            println("handleSkilling | You don't have the required level to cut this gem.");
-            botState = BotState.IDLE;
-            return random.nextLong(1230, 2132);
+        int gemid = gem.getItemId();
+        if (Skills.CRAFTING.getActualLevel() <= 98) {
+            if (!CanCut(gemid)) {
+                println("handleSkilling | You don't have the required level to cut this gem.");
+                botState = BotState.IDLE;
+                return random.nextLong(850, 1850);
+            }
         } else {
-            boolean craftsuccess = craftlog1.interact("Craft");
+            println("CraftGems | Cutting gems");
+            Execution.delayUntil(15000, () -> gem.interact("Craft"));
             ExecDelay();
-            if (craftsuccess) {
-                ExecDelay();
-                println("CraftGems | Cutting gems");
-                MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350);
-                ExecDelay();
-                Execution.delayUntil(30000, () -> !Interfaces.isOpen(1370));
-                ExecDelay();
-                while (Interfaces.isOpen(1251)) {
-                    Execution.delay(1000);
-                    if (DebugScript) {
-                        println("CraftGems | Waiting for the gems to cut.");
-                    }
+            Execution.delayUntil(15000, () -> Interfaces.isOpen(1370));
+            ExecDelay();
+            Execution.delayUntil(15000, () -> MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350));
+            ExecDelay();
+            while (Interfaces.isOpen(1251)) {
+                Execution.delay(1000);
+                if (DebugScript) {
+                    println("CraftGems | Waiting for the gems to cut.");
                 }
-                return random.nextLong(1200, 2130);
             }
         }
-        println("CraftGems | Something went wrong");
-        return random.nextLong(1230, 2132);
+        return random.nextLong(850, 1850);
     }
 
     public boolean CanCut(int ItemId) {
@@ -133,7 +135,7 @@ public class Gemcutter extends LoopingScript {
     }
 
     public void ExecDelay() {
-        int delay = RandomGenerator.nextInt(400, 800);
+        int delay = RandomGenerator.nextInt(650, 800);
         Execution.delay(delay);
     }
 
