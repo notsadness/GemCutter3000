@@ -76,42 +76,35 @@ public class Gemcutter extends LoopingScript {
     }
 
     private long handleSkilling() {
-        if (!Backpack.containsItemByCategory(5289)) {
-            println("handleSkilling | No Gems found, banking.");
-            botState = BotState.BANKING;
-            return random.nextLong(550, 1200);
-        }
-        if (Backpack.containsItemByCategory(5289) && Backpack.containsItemByCategory(5290)) {
-            println("handleSkilling | Mixed inventory found, banking.");
-            botState = BotState.BANKING;
-            return random.nextLong(550, 1200);
-        }
-        ExecDelay();
-        Component gem = ComponentQuery.newQuery(1473).itemCategory(5289).results().first();
-        ExecDelay();
-        int gemid = gem.getItemId();
-        if (Skills.CRAFTING.getActualLevel() <= 98) {
-            if (!CanCut(gemid)) {
-                println("handleSkilling | You don't have the required level to cut this gem.");
-                botState = BotState.IDLE;
-                return random.nextLong(850, 1850);
-            }
-        } else {
-            println("CraftGems | Cutting gems");
-            Execution.delayUntil(15000, () -> gem.interact("Craft"));
-            ExecDelay();
-            Execution.delayUntil(15000, () -> Interfaces.isOpen(1370));
-            ExecDelay();
-            Execution.delayUntil(15000, () -> MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350));
-            ExecDelay();
-            while (Interfaces.isOpen(1251)) {
-                Execution.delay(1000);
-                if (DebugScript) {
-                    println("CraftGems | Waiting for the gems to cut.");
+        if (Backpack.containsItemByCategory(5289)) {
+            Component gem = ComponentQuery.newQuery(1473).itemCategory(5289).results().first();
+            if (gem != null && gem.interact("Craft")) {
+                int gemid = gem.getItemId();
+                ExecDelay();
+                if (Skills.CRAFTING.getActualLevel() <= 98) {
+                    if (!CanCut(gemid)) {
+                        println("handleSkilling | You don't have the required level to cut this gem.");
+                        botState = BotState.IDLE;
+                        return random.nextLong(850, 1850);
+                    }
+                }
+                println("CraftGems | Cutting gems");
+                Execution.delayUntil(15000, () -> Interfaces.isOpen(1370));
+                MiniMenu.interact(ComponentAction.DIALOGUE.getType(), 0, -1, 89784350);
+                Execution.delayUntil(15000, () -> Interfaces.isOpen(1251));
+                // ExecDelay();
+                while (Interfaces.isOpen(1251)) {
+                    Execution.delay(1000);
+                    if (DebugScript) {
+                        println("CraftGems | Waiting for the gems to cut.");
+                    }
                 }
             }
+        } else {
+            println("CraftGems | No gems found, banking.");
+            botState = BotState.BANKING;
         }
-        return random.nextLong(850, 1850);
+        return random.nextLong(850, 1500);
     }
 
     public boolean CanCut(int ItemId) {
